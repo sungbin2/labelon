@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "labelon-reviewer"
-version = "0.9.1"
+version = "0.9.2"
 description = "LabelOn UC-LE 어노테이터 초안 검토 자동화 도구 (사람 확인 후 제출)"
 requires-python = ">=3.13"
 dependencies = [

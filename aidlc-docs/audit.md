@@ -975,3 +975,26 @@ PW: [비밀번호 - 보안상 기록 생략] 로그인해서 프로젝트 진행
 **Context**: OPERATIONS (cycle 9) hotfix
 
 ---
+## Cycle 9 - Hotfix 0.9.1 Push Success
+**Timestamp**: 2026-10-03T05:45:00Z
+**User Input**: "<bash-input> git push</bash-input> To https://github.com/sungbin2/labelon.git ef2ad6c..075acb4 main -> main"
+**AI Response**: 0.9.1 배포 완료. 사용자 재시작 후 Chrome 페이지 영역 확인 대기.
+**Context**: OPERATIONS (cycle 9)
+
+---
+## Cycle 9 - run.bat 오류 보고
+**Timestamp**: 2026-10-03T06:00:00Z
+**User Input**: "(.venv) PS C:\Users\sbahn\label_work> .\run.bat
+[labelon-reviewer] checking for updates (git pull)...
+.은(는) 예상되지 않았습니다."
+**AI Response**: 원인 — `if errorlevel 1 ( ... )` 블록 안 echo 문구의 괄호 "(network/conflict)" 가 블록을 조기 종료. run.bat 을 괄호 블록 없이 goto 구조로 재작성(0.9.2).
+**Context**: OPERATIONS (cycle 9) hotfix
+
+---
+## Cycle 9 - Hotfix 0.9.2 (run.bat 재구성)
+**Timestamp**: 2026-10-03T06:15:00Z
+**User Input**: (없음)
+**AI Response**: run.bat 을 업데이트 전용 런처로 축소하고 실행 로직을 scripts/start.bat 로 분리(괄호 블록 제거, cmd 의 실행 중 파일 변경 문제 회피). `run.bat --no-update --help` 로 구문 확인. v0.9.2 커밋, 사용자 push 필요. 이번 1회는 사용자가 `git pull` 을 직접 받아야 함(옛 run.bat 이 pull 직후 파싱 오류).
+**Context**: OPERATIONS (cycle 9) hotfix 2
+
+---

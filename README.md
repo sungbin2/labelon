@@ -24,7 +24,7 @@ setup.bat
 run.bat
 ```
 
-`run.bat` 은 시작할 때 `git pull` 로 최신 버전을 받고(변경이 있으면 패키지 재설치) 실행합니다. 네트워크가 없거나 충돌이 있으면 경고만 내고 현재 버전으로 실행합니다. 업데이트를 건너뛰려면 `run.bat --no-update`. `config.yaml` 은 PC 마다 로컬 파일이라 git 에 올라가지 않습니다. (zip 배포는 보조 수단으로 `dist/` 에 계속 생성)
+`run.bat` 은 시작할 때 `git pull` 로 최신 버전을 받고(변경이 있으면 패키지 재설치) 실행합니다. 네트워크가 없거나 충돌이 있으면 경고만 내고 현재 버전으로 실행합니다. 업데이트를 건너뛰려면 `run.bat --no-update`. 실행 로직은 `scripts\start.bat` 에 있고 `run.bat` 은 업데이트만 담당하는 작은 파일이라, 업데이트 중에 바뀌어도 안전합니다. (`run.bat` 자체가 바뀐 버전을 받은 직후에는 한 번 더 실행하세요) `config.yaml` 은 PC 마다 로컬 파일이라 git 에 올라가지 않습니다. (zip 배포는 보조 수단으로 `dist/` 에 계속 생성)
 
 사전 준비: 64-bit Python 3.13(python.org, `py -3.13` 으로 실행 가능해야 함), Google Chrome, Claude Code CLI 설치 후 터미널에서 `claude` 를 한 번 실행해 로그인.
 
