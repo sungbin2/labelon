@@ -43,6 +43,16 @@ def test_template_without_placeholder(tmp_path):
     assert "archetype_templates" in ei.value.field
 
 
+def test_chrome_window_format(tmp_path):
+    """사이클 9: chrome.window 는 maximized 또는 가로x세로."""
+    cfg = cfgmod.load(write(tmp_path, "dataset_id: 1\npersona: x\nchrome:\n  window: 1600x1000\n"))
+    assert cfg.chrome.window_size() == (1600, 1000) and cfg.chrome.image_tab is True
+    assert cfgmod.AppConfig(dataset_id=1).chrome.window_size() is None
+    with pytest.raises(ConfigError) as ei:
+        cfgmod.load(write(tmp_path, "dataset_id: 1\npersona: x\nchrome:\n  window: big\n"))
+    assert "window" in ei.value.field
+
+
 def test_missing_file(tmp_path):
     with pytest.raises(ConfigError) as ei:
         cfgmod.load(tmp_path / "nope.yaml")

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -61,6 +62,22 @@ class LabelonConfig(BaseModel):
 class ChromeConfig(BaseModel):
     channel: Literal["chrome", "chromium", "msedge"] = "chrome"
     profile_dir: str = ".profile/chrome"
+    window: str = "maximized"  # 사이클 9: "maximized" 또는 "가로x세로" (예: 1600x1000). 시작 후 CDP 로 적용
+    image_tab: bool = True  # 사이클 9: 건을 가져오면 Chrome 에 이미지 전용 탭을 열어 원본 사진을 표시
+
+    @field_validator("window")
+    @classmethod
+    def _window_format(cls, v: str) -> str:
+        v = (v or "").strip().lower()
+        if v == "maximized" or re.fullmatch(r"\d{3,5}x\d{3,5}", v):
+            return v
+        raise ValueError("chrome.window 는 'maximized' 또는 '가로x세로'(예: 1600x1000) 형식이어야 합니다")
+
+    def window_size(self) -> tuple[int, int] | None:
+        if self.window == "maximized":
+            return None
+        w, h = self.window.split("x")
+        return int(w), int(h)
 
 
 class ImpossibleRules(BaseModel):

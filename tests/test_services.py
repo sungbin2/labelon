@@ -54,6 +54,9 @@ class FakeBrowser:
     async def fetch_bytes(self, url):
         return _jpeg(800, 600)
 
+    async def show_image(self, image_url, caption=""):
+        self.shown = getattr(self, "shown", []) + [(image_url, caption)]
+
     async def content(self):
         return self.html
 
@@ -155,6 +158,18 @@ async def test_login_expired(config, tmp_path):
     ctx.login_watch_task.cancel()
     await SessionService(ctx).watch_login(interval=0.01)  # FakeBrowser.is_logged_in → True
     assert not ctx.sm.current().login_required and any("로그인이 확인" in w for w in ctx.sm.current().warnings)
+
+
+async def test_image_tab_shown_after_fetch(config, tmp_path, job_page_html):
+    """사이클 9: 가져오기마다 Chrome 이미지 탭에 원본 URL 을 표시한다. 설정으로 끌 수 있다."""
+    ctx = make_ctx(config, tmp_path, job_page_html, judge_raw=judge_raw_all_true())
+    await run_fetch(ctx)
+    src = ctx.sm.current().source
+    assert ctx.browser.shown == [(src.image_url, src.org_file_name)]
+    config.chrome.image_tab = False
+    ctx2 = make_ctx(config, tmp_path, job_page_html, judge_raw=judge_raw_all_true())
+    await run_fetch(ctx2)
+    assert not hasattr(ctx2.browser, "shown")
 
 
 async def test_reanalyze_keeps_item_and_resets_edits(config, tmp_path, job_page_html):

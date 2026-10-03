@@ -69,3 +69,7 @@ AI-DLC 규칙상 Operations 단계는 플레이스홀더다. 이 도구는 사�
 - 모델 턴 삭제는 기본 금지(`revision_rules.allow_turn_drop: false`). 항목별 "초안으로" 되돌리기. 초안에 있던 턴을 비우면 승인 차단
 - 코드 변경 후 배포: 커밋 → push. 사용자 PC 는 다음 run.bat 에서 자동 반영
 - push 는 이 PC 에서 `sungbin2` 계정으로 한다(원격 URL 에 사용자명 포함). 도구의 자동 모드에서는 `git push` 가 차단되므로 사용자가 `! git push` 로 실행하거나 Bash 권한 규칙에 허용을 추가한다
+
+## 사이클 9 (2026-10-03) 운영 메모 (v0.9.0)
+- Chrome 창 크기는 `chrome.window`(maximized 또는 1600x1000). 시작 후 CDP 로 적용하며 실패하면 `logs/app.log` 에 "window size apply failed"
+- 건을 가져오면 Chrome 이미지 전용 탭에 원본 사진을 표시(`chrome.image_tab`). 작업 탭은 뒤에 유지되어 제출에 영향 없음. 탭을 닫아도 다음 건에서 다시 만든다

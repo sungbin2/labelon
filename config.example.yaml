@@ -46,6 +46,8 @@ labelon:
 chrome:
   channel: "chrome"            # chrome | chromium
   profile_dir: ".profile/chrome"
+  window: "maximized"          # Chrome 창 크기: maximized 또는 "1600x1000" 처럼 가로x세로
+  image_tab: true              # 건을 가져오면 Chrome 에 이미지 전용 탭을 열어 원본 사진을 창에 맞춰 표시 (작업 탭은 유지)
 
 # 검수 가이드 규칙 (2026-09-28)
 impossible_rules:

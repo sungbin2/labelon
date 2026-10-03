@@ -4,7 +4,7 @@
 - **Project Name**: LabelOn UC-LE 어노테이터 작업 자동화
 - **Project Type**: Greenfield
 - **Start Date**: 2026-09-23T01:12:00Z
-- **Current Stage**: OPERATIONS (변경 사이클 8 완료, v0.8.0, git 배포)
+- **Current Stage**: OPERATIONS (변경 사이클 9 완료, v0.9.0)
 
 ## Workspace State
 - **Existing Code**: No
@@ -200,3 +200,19 @@
 - [x] Build and Test (2026-10-03. push 성공으로 배포 완료)
 ### 🟡 OPERATIONS PHASE
 - [x] Operations (git https://github.com/sungbin2/labelon.git, run.bat 자동 업데이트)
+
+
+---
+
+# 변경 사이클 9 (2026-10-03): Chrome 창 크기 · 가져오기 시 이미지 자동 표시
+
+## Stage Progress (사이클 9)
+### 🔵 INCEPTION PHASE
+- [x] Workspace Detection (Brownfield)
+- [x] Requirements Analysis (Q1=A, 2026-10-03T03:40:00Z)
+- [x] Workflow Planning (Minimal)
+### 🟢 CONSTRUCTION PHASE
+- [x] Code Generation (2026-10-03)
+- [x] Build and Test (121 passed. 실제 Chrome 확인은 사용자)
+### 🟡 OPERATIONS PHASE
+- [x] Operations (operations.md 갱신)

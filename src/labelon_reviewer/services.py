@@ -60,6 +60,7 @@ class BrowserLike(Protocol):
     async def wait_for_login(self, timeout_s: int = ..., poll_s: float = ...) -> None: ...
     async def open_job_page(self, dataset_id: int) -> tuple[str, str]: ...
     async def fetch_bytes(self, url: str) -> bytes: ...
+    async def show_image(self, image_url: str, caption: str = "") -> None: ...
     async def content(self) -> str: ...
     async def fetch_project_home(self) -> str: ...
 
@@ -324,6 +325,11 @@ class FetchAndAnalyzeService:
         images = await ctx.images.fetch(ctx.browser.fetch_bytes, source)
         sm.current().image_paths = images
         sm.publish()
+        if ctx.config.chrome.image_tab:  # 사이클 9: Chrome 이미지 전용 탭에 원본 사진 표시
+            try:
+                await ctx.browser.show_image(source.image_url, source.org_file_name)
+            except Exception as e:
+                log.warning("image tab failed: %s", e)
 
         warnings: list[str] = []
         judge = None
