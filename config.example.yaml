@@ -1,0 +1,68 @@
+# labelon-reviewer 설정 예시. 복사해서 config.yaml 로 저장한 뒤 수정하세요.
+# 비밀번호, API 키, 토큰은 이 파일에 절대 넣지 않습니다.
+
+dataset_id: 688             # 기본·폴백 데이터셋. 실제 작업 대상은 검토 화면 드롭다운에서 선택(마지막 선택은 data/ui-state.json 에 저장)
+persona: "장난기가 많은 어린아이"   # 선택. 초안의 persona 가 비어 있을 때만 사용. 데이터셋마다 페르소나가 달라 비교에는 쓰지 않음
+threshold: 40            # 정합성 점수가 이 값 이하이면 불가 후보
+
+archetype_templates:
+  일상지원: "(Persona) 이 주변에서 가려는 곳과 필요한 것을 찾아갈 수 있도록 주변 시설과 길이 어떻게 이어져 있는지 확인하고, 어느 쪽으로 가야 하는지와 걸리는 것을 우선 안내하세요."
+  보행안전: "(Persona) 안전하게 이동할 수 있도록 진행 방향의 보행환경을 확인하고, 이동 경로의 장애물과 위험요소를 우선 안내하세요."
+  쇼핑: "(Persona) 찾는 물건에 닿을 수 있도록 물건이 어디에 어떻게 놓여 있는지 확인하고, 손을 뻗을 방향과 걸리는 것을 우선 안내하세요."
+  음식: "(Persona) 음식을 스스로 다룰 수 있도록 음식과 관련된 것이 어디에 있는지 확인하고, 손이 닿는 방향과 조심할 것을 우선 안내하세요."
+  실내탐색: "(Persona) 실내를 스스로 다닐 수 있도록 공간의 구조와 가구 배치를 확인하고, 지나갈 길과 부딪힐 만한 것을 우선 안내하세요."
+  가전조작: "(Persona) 기기를 다룰 수 있도록 가전이 어디에 있고 어느 면이 앞면인지, 보이는 조작 단서(손잡이·표시등·틈·문)가 무엇인지 짚고, 어느 쪽에서 무엇을 만지면 되는지 우선 안내하세요."
+
+# 서버에 남은 옛 문장의 초안도 템플릿 일치로 인정 (검사 전용)
+legacy_archetype_templates:
+  일상지원:
+    - "(Persona) 이 공간에서 필요한 것을 찾을 수 있도록 주변 시설과 물건이 어떻게 놓여 있는지 확인하고, 무엇이 어느 쪽에 있는지 우선 안내하세요."
+
+models:
+  judge: "claude-sonnet-5"
+  revise: "claude-fable-5-1"
+  judge_fallback: ""               # 모델이 응답을 거부(refusal)하면 1회 대체 호출. 빈 값이면 대체 없음
+  revise_fallback: "claude-sonnet-5"
+effort:
+  judge: "medium"
+  revise: "high"
+
+model_backend: "claude_cli"   # claude_cli | anthropic_sdk | fake
+
+cli:
+  path: "claude"               # PATH에 있는 claude 실행 파일 또는 절대 경로
+  cwd: "C:/labelon-reviewer-work"   # CLAUDE.md 가 조상 경로에 없는 빈 디렉터리 (없으면 생성)
+  flags_profile: "minimal"    # basic | system_prompt | minimal. 2026-09-23 벤치: minimal 2,193 / system_prompt 27,160 / basic 35,659 tokens
+  max_turns: 4
+  timeouts:
+    judge: 120
+    revise: 180
+
+labelon:
+  base_url: "https://www.labelon.kr"
+  job_time_limit_minutes: 60
+  server_tz_offset_hours: 9    # 서버가 내려주는 jobDate 는 한국 시간
+
+chrome:
+  channel: "chrome"            # chrome | chromium
+  profile_dir: ".profile/chrome"
+
+# 검수 가이드 규칙 (2026-09-28)
+impossible_rules:
+  max_false_facts: 3            # 거짓 팩트가 이 개수 이상이면 불가 후보(수정량 과다)
+  max_inconsistent_fields: 4    # 불일치 필드(Scene/CoT/대화 턴)가 이 개수 이상이면 불가 후보
+text_rules:
+  remove_phone_numbers: true    # 전화번호 검출 시 경고하고 수정안에서 제거
+revision_rules:
+  allow_turn_drop: false        # true 면 모델이 CoT 3단계 밖의 대화 턴을 삭제·병합할 수 있음. 기본은 삭제 금지(내용만 수정)
+ui:
+  edit_delay_ms: 1500           # 직접 수정 시 입력이 멈춘 뒤 저장까지 지연(ms). 300~10000
+
+image_max_side: 1568
+cache_retention_days: 7
+
+ui_port: 8765
+
+paths:
+  data: "data"
+  logs: "logs"

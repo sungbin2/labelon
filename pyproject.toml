@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "labelon-reviewer"
+version = "0.8.0"
+description = "LabelOn UC-LE 어노테이터 초안 검토 자동화 도구 (사람 확인 후 제출)"
+requires-python = ">=3.13"
+dependencies = [
+  "fastapi>=0.141",
+  "uvicorn[standard]>=0.53",
+  "pydantic>=2.13",
+  "pillow>=12",
+  "playwright>=1.63",
+  "httpx>=0.28",
+  "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9", "pytest-asyncio>=1.4", "ruff>=0.8"]
+anthropic = ["anthropic>=1.0"]
+
+[project.scripts]
+labelon-reviewer = "labelon_reviewer.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+labelon_reviewer = ["prompts/*.md", "web/static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501", "UP042"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/fixtures/*.py" = ["E402"]
+"scripts/*.py" = ["E402"]

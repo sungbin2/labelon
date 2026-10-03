@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LabelOn UC-LE 검토</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header id="header" class="header">
+  <nav class="tabs">
+    <button class="tab active" data-tab="review" data-testid="review-tab">검토</button>
+    <button class="tab" data-tab="history" data-testid="history-tab">이력</button>
+  </nav>
+  <div class="status-group">
+    <label class="ds-label" for="dataset-select">데이터셋</label>
+    <select id="dataset-select" class="ds-select" data-testid="dataset-select" title="진행중인 작업 중 선택"></select>
+    <button id="dataset-refresh" class="btn small" data-testid="dataset-refresh-button" title="LabelOn 에서 목록 다시 읽기">새로고침</button>
+    <span id="state-badge" class="badge" data-testid="state-badge">준비 중</span>
+    <span id="file-name" class="muted" data-testid="file-name"></span>
+    <span id="countdown" class="countdown" data-testid="countdown"></span>
+    <span id="usage" class="muted" data-testid="usage-summary"></span>
+    <button id="reopen-browser" class="btn small hidden" data-testid="reopen-browser-button">브라우저 다시 열기</button>
+    <button id="shutdown" class="btn small ghost" data-testid="shutdown-button" title="서버 종료">종료</button>
+  </div>
+</header>
+
+<div id="banner" class="banner hidden" data-testid="banner"></div>
+
+<main id="review-view" class="grid">
+  <section class="col left">
+    <div id="image-panel" class="card image-card" data-testid="image-panel">
+      <img id="source-image" alt="원본 이미지" class="hidden">
+      <div id="image-placeholder" class="placeholder">건을 가져오면 이미지가 표시됩니다</div>
+    </div>
+    <div id="meta-panel" class="card" data-testid="meta-panel"></div>
+    <div id="qa-panel" class="card" data-testid="qa-panel"></div>
+  </section>
+
+  <section class="col center">
+    <div id="instruction-panel" class="card" data-testid="instruction-panel"></div>
+    <div id="draft-panel" data-testid="draft-panel"></div>
+  </section>
+
+  <section class="col right">
+    <div id="judge-panel" class="card" data-testid="judge-panel"></div>
+    <div id="warnings-panel" class="card hidden" data-testid="warnings-panel"></div>
+    <div id="progress-panel" class="card hidden" data-testid="progress-panel"></div>
+  </section>
+</main>
+
+<main id="history-view" class="hidden">
+  <div id="history-summary" class="card" data-testid="history-summary"></div>
+  <div class="history-grid">
+    <div id="history-list" class="card" data-testid="history-list"></div>
+    <div id="history-detail" class="card" data-testid="history-detail">건을 선택하세요</div>
+  </div>
+</main>
+
+<footer id="action-bar" class="action-bar" data-testid="action-bar">
+  <button id="btn-fetch" class="btn primary" data-testid="action-fetch-button" title="Alt+N">다음 건 가져오기 <kbd>Alt+N</kbd></button>
+  <button id="btn-revert" class="btn" data-testid="action-revert-button" title="Alt+R">초안으로 되돌리기 <kbd>Alt+R</kbd></button>
+  <button id="btn-reanalyze" class="btn" data-testid="action-reanalyze-button" title="Alt+S">다시 판독 <kbd>Alt+S</kbd></button>
+  <button id="btn-skip" class="btn small ghost" data-testid="action-skip-button" title="이 건을 제출하지 않고 LabelOn 에 반환">반환</button>
+  <button id="btn-impossible" class="btn danger" data-testid="action-impossible-button" title="Alt+X">불가 제출 <kbd>Alt+X</kbd></button>
+  <button id="btn-approve" class="btn success" data-testid="action-approve-button" title="Alt+A">승인·제출 <kbd>Alt+A</kbd></button>
+</footer>
+
+<div id="dialog" class="dialog hidden" data-testid="dialog">
+  <div class="dialog-box">
+    <h3 id="dialog-title"></h3>
+    <p id="dialog-message"></p>
+    <textarea id="dialog-input" class="hidden" rows="4" data-testid="dialog-input"></textarea>
+    <div class="dialog-actions">
+      <button id="dialog-cancel" class="btn" data-testid="dialog-cancel-button">취소</button>
+      <button id="dialog-ok" class="btn primary" data-testid="dialog-ok-button">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox" class="lightbox hidden" data-testid="lightbox"><img id="lightbox-img" alt="확대 이미지"></div>
+<div id="toast" class="toast hidden" data-testid="toast"></div>
+
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>
