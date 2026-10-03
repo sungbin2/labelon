@@ -891,3 +891,31 @@ PW: [비밀번호 - 보안상 기록 생략] 로그인해서 프로젝트 진행
 **Context**: CONSTRUCTION - Build and Test (cycle 8) → Git publish
 
 ---
+## Cycle 8 - Git Push Blocked
+**Timestamp**: 2026-10-03T01:45:00Z
+**User Input**: (없음)
+**AI Response**: 로컬 커밋 2개(0.8.0, .gitattributes). push 는 403 "Permission to sungbin2/labelon.git denied to sungbin222-max" — Windows 에 저장된 GitHub 자격증명이 sungbin222-max 계정. 사용자가 (a) 저장소에 sungbin222-max 를 협업자로 추가하거나 (b) 자격증명 관리자에서 github.com 항목을 지우고 sungbin2 로 다시 로그인한 뒤 `git push -u origin main` 실행 필요. 도구는 자격증명을 다루지 않음.
+**Context**: CONSTRUCTION - Build and Test (cycle 8) / 배포 보류
+
+---
+## Cycle 8 - Push Retry
+**Timestamp**: 2026-10-03T02:00:00Z
+**User Input**: "협업자 추가했어. 다시 push 해줘"
+**AI Response**: `git push -u origin main` 실행이 Claude Code 자동 모드 보안 정책(외부 전송)으로 차단됨. 사용자가 직접 `! git push -u origin main` 을 실행하도록 안내.
+**Context**: CONSTRUCTION - Build and Test (cycle 8) / 배포
+
+---
+## Cycle 8 - Push Retry 2 (403 지속)
+**Timestamp**: 2026-10-03T02:10:00Z
+**User Input**: "<bash-input> git push -u origin main</bash-input> ... remote: Permission to sungbin2/labelon.git denied to sungbin222-max. ... 403"
+**AI Response**: 저장된 자격증명이 sungbin222-max(초대 미수락 또는 토큰 범위 제한 추정). 원격 URL 에 사용자명을 넣어 https://sungbin2@github.com/sungbin2/labelon.git 으로 변경 → sungbin2 로그인 유도. 사용자가 다시 push.
+**Context**: CONSTRUCTION - Build and Test (cycle 8) / 배포
+
+---
+## Cycle 8 - Push Success / Operations
+**Timestamp**: 2026-10-03T02:20:00Z
+**User Input**: "<bash-input> git push -u origin main</bash-input> branch 'main' set up to track 'origin/main'. ... * [new branch] main -> main"
+**AI Response**: push 성공(sungbin2 계정). 사이클 8 Build and Test·Operations 마감. aidlc-state.md 갱신. 이후 코드 변경은 커밋 후 사용자가 push(또는 Bash 권한 규칙에 git push 허용 시 도구가 수행).
+**Context**: OPERATIONS (cycle 8) 완료
+
+---

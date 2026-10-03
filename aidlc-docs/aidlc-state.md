@@ -4,7 +4,7 @@
 - **Project Name**: LabelOn UC-LE 어노테이터 작업 자동화
 - **Project Type**: Greenfield
 - **Start Date**: 2026-09-23T01:12:00Z
-- **Current Stage**: CONSTRUCTION - Build and Test (변경 사이클 8, 승인 대기)
+- **Current Stage**: OPERATIONS (변경 사이클 8 완료, v0.8.0, git 배포)
 
 ## Workspace State
 - **Existing Code**: No
@@ -197,4 +197,6 @@
 - [x] Workflow Planning (승인 2026-10-03T00:40:00Z)
 ### 🟢 CONSTRUCTION PHASE
 - [x] Code Generation (Part 2 완료 2026-10-03)
-- [ ] Build and Test (완료, 승인 대기. cycle8-build-and-test-summary.md)
+- [x] Build and Test (2026-10-03. push 성공으로 배포 완료)
+### 🟡 OPERATIONS PHASE
+- [x] Operations (git https://github.com/sungbin2/labelon.git, run.bat 자동 업데이트)

@@ -68,3 +68,4 @@ AI-DLC 규칙상 Operations 단계는 플레이스홀더다. 이 도구는 사�
 - 저장소에 올리지 않는 것: `config.yaml`, `.profile/`, `data/`, `logs/`, `guide/`(회사 자료), zip. 감사 로그에는 계정 이메일이 있으므로 저장소는 private 유지
 - 모델 턴 삭제는 기본 금지(`revision_rules.allow_turn_drop: false`). 항목별 "초안으로" 되돌리기. 초안에 있던 턴을 비우면 승인 차단
 - 코드 변경 후 배포: 커밋 → push. 사용자 PC 는 다음 run.bat 에서 자동 반영
+- push 는 이 PC 에서 `sungbin2` 계정으로 한다(원격 URL 에 사용자명 포함). 도구의 자동 모드에서는 `git push` 가 차단되므로 사용자가 `! git push` 로 실행하거나 Bash 권한 규칙에 허용을 추가한다
