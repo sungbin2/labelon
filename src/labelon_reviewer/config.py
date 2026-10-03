@@ -95,6 +95,7 @@ class RevisionRules(BaseModel):
     """수정안 제약 (사이클 8). allow_turn_drop=False 면 모델이 턴을 삭제하지 못하고 내용만 고친다."""
 
     allow_turn_drop: bool = False
+    revise_impossible: bool = True  # 사이클 10: 불가 후보 건에도 2단계 수정안을 만들어 화면에 반영(사람이 고쳐서 승인할 수 있게)
 
 
 class UiConfig(BaseModel):

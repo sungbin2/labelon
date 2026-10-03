@@ -48,6 +48,7 @@ copy config.example.yaml config.yaml
 | `impossible_rules` | 거짓 팩트·불일치 필드가 이 개수 이상이면 불가 후보(수정량 과다). 기본 3 / 4 |
 | `chrome.window` | Chrome 창 크기. `maximized`(기본) 또는 `1600x1000` 처럼 가로x세로. 시작 후 창 상태를 직접 적용 |
 | `chrome.image_tab` | 건을 가져오면 Chrome 에 이미지 전용 탭을 열어 원본 사진을 창에 맞춰 표시(기본 true). 클릭으로 원본 크기 전환 |
+| `revision_rules.revise_impossible` | 불가 후보 건에도 수정안을 만들어 diff 로 표시(기본 true). 고쳐서 승인하거나 불가로 제출 선택 가능 |
 | `revision_rules.allow_turn_drop` | 모델이 대화 턴을 삭제·병합할 수 있는지. 기본 false(모든 턴 유지, 내용만 수정) |
 | `ui.edit_delay_ms` | 화면에서 직접 수정할 때 입력이 멈춘 뒤 저장까지 지연(ms). 기본 1500. 한글 조합 중에는 저장하지 않고, 칸을 벗어나면 즉시 저장 |
 | `text_rules.remove_phone_numbers` | 전화번호 검출·제거 (기본 true) |

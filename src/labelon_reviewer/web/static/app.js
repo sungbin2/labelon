@@ -276,7 +276,7 @@ function renderJudge(item) {
   const low = j.consistency_score <= th;
   p.innerHTML = `<h4>정합성 점수</h4><div class="score">${j.consistency_score} <span class="muted" style="font-size:14px">/ 100 (임계값 ${th})</span></div>
     <div class="score-bar ${low ? "low" : ""}"><div style="width:${j.consistency_score}%"></div></div>
-    ${j.impossible_candidate ? `<div class="alert">불가 후보입니다.<br>${(j.impossible_reasons || []).map((r) => `• ${esc(r)}`).join("<br>")}<br>사진에 없는 것: ${esc(j.missing_in_image.join(", ") || "-")}<br>제안 사유: ${esc(j.impossible_reason_suggestion || "-")}</div>` : ""}
+    ${j.impossible_candidate ? `<div class="alert">불가 후보입니다.<br>${(j.impossible_reasons || []).map((r) => `• ${esc(r)}`).join("<br>")}<br>사진에 없는 것: ${esc(j.missing_in_image.join(", ") || "-")}<br>제안 사유: ${esc(j.impossible_reason_suggestion || "-")}${j.needs_revision ? "<br><span class=\"muted\">수정안도 생성되었습니다. 고쳐서 승인하거나 불가로 제출하세요.</span>" : ""}</div>` : ""}
     ${j.archetype_suggestion && !j.archetype_suggestion.fits && j.archetype_suggestion.suggested ? `<div class="alert warn">아키타입 정정 제안: ${esc(item.draft.instruction.archetype)} → <b>${esc(j.archetype_suggestion.suggested)}</b> — ${esc(j.archetype_suggestion.reason)}</div>` : ""}
     ${j.qa_matches_cot3 === false ? '<div class="alert warn">대화가 CoT 3단계와 맞지 않습니다</div>' : ""}
     ${(j.phone_numbers || []).length ? `<div class="alert warn">전화번호 발견(삭제 대상): ${esc(j.phone_numbers.join(", "))}</div>` : ""}

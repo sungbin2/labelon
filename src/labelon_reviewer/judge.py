@@ -219,7 +219,8 @@ class JudgeStage:
             reason = "; ".join(reasons)
 
         # 수정 필요 (D3)
-        needs_revision = (not impossible) and (
+        # 사이클 10: revise_impossible=True 면 불가 후보라도 수정안을 만든다(사람이 고쳐 승인할 수 있도록)
+        needs_revision = (cfg.revision_rules.revise_impossible or not impossible) and (
             false_n > 0 or inconsistent_n > 0 or not fit.cot_fits or not fit.dialogue_fits
             or correction is not None or not ex["qa_matches_cot3"]
             or any(f.field.startswith("cot") and not f.role_fits for f in fields)

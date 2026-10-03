@@ -57,6 +57,7 @@ text_rules:
   remove_phone_numbers: true    # 전화번호 검출 시 경고하고 수정안에서 제거
 revision_rules:
   allow_turn_drop: false        # true 면 모델이 CoT 3단계 밖의 대화 턴을 삭제·병합할 수 있음. 기본은 삭제 금지(내용만 수정)
+  revise_impossible: true       # 불가 후보 건에도 수정안을 만들어 diff 로 보여 준다(모델 호출 1회 추가). false 면 불가 후보는 수정 생략
 ui:
   edit_delay_ms: 1500           # 직접 수정 시 입력이 멈춘 뒤 저장까지 지연(ms). 300~10000
 

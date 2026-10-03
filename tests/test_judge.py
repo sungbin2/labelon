@@ -49,7 +49,10 @@ async def test_impossible_candidate_skips_revision(config, sample_item, sample_d
     raw["scene"]["consistent"] = False
     raw["impossible_reason_suggestion"] = "이미지와 초안의 장면이 다름"
     j = await JudgeStage(config, FakeModelClient(judge_raw=raw)).run(IMG, sample_item, sample_draft)
-    assert j.impossible_candidate and not j.needs_revision and j.consistency_score <= config.threshold
+    assert j.impossible_candidate and j.needs_revision and j.consistency_score <= config.threshold  # 사이클 10: 불가 후보도 수정안 생성
+    config.revision_rules.revise_impossible = False
+    j2 = await JudgeStage(config, FakeModelClient(judge_raw=raw)).run(IMG, sample_item, sample_draft)
+    assert j2.impossible_candidate and not j2.needs_revision
 
 
 def test_normalize_fills_missing(sample_draft):
@@ -105,7 +108,7 @@ async def test_too_many_false_facts_is_impossible(config, sample_item, sample_dr
     for i in range(3):
         raw["facts"][i]["verdict"] = "FALSE"
     j = await JudgeStage(config, FakeModelClient(judge_raw=raw)).run(IMG, sample_item, sample_draft)
-    assert j.impossible_candidate and any("거짓 팩트 3개" in r for r in j.impossible_reasons) and not j.needs_revision
+    assert j.impossible_candidate and any("거짓 팩트 3개" in r for r in j.impossible_reasons) and j.needs_revision
 
 
 async def test_qa_cot3_and_phone_trigger_revision(config, sample_item, sample_draft):

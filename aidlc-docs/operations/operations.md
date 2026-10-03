@@ -75,3 +75,6 @@ AI-DLC 규칙상 Operations 단계는 플레이스홀더다. 이 도구는 사�
 - 건을 가져오면 Chrome 이미지 전용 탭에 원본 사진을 표시(`chrome.image_tab`). 작업 탭은 뒤에 유지되어 제출에 영향 없음. 탭을 닫아도 다음 건에서 다시 만든다
 - 0.9.1: 페이지 영역이 1280x720 으로 고정되던 Playwright 옵션(viewport=None → no_viewport=True) 수정. 창 크기 문제가 또 보이면 임시 프로필로 `scratchpad/win_exp.py` 류의 CDP 실험(getWindowBounds + innerWidth)으로 창/페이지 중 어느 쪽인지 먼저 구분
 - 0.9.2: run.bat 괄호 블록 파싱 오류 수정. run.bat 은 업데이트만 하는 작은 런처로 고정하고 실행 로직은 scripts/start.bat 로 분리(cmd 는 배치 파일을 실행 중에 바이트 오프셋으로 읽으므로 pull 로 바뀌는 파일에 로직을 두지 않는다). 배치 파일 규칙: ASCII, goto 구조, 괄호 블록·메시지 괄호 금지
+
+## 사이클 10 (2026-10-03) 운영 메모 (v0.10.0)
+- 불가 후보 건도 수정안이 생성된다(`revision_rules.revise_impossible`). 모델 호출이 늘어 비용이 부담되면 false 로
