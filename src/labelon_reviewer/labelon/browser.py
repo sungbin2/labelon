@@ -45,7 +45,7 @@ class BrowserSession:
         size = self.config.chrome.window_size()
         win_arg = f"--window-size={size[0]},{size[1]}" if size else "--start-maximized"
         kwargs: dict[str, Any] = {
-            "user_data_dir": str(self.config.profile_dir), "headless": headless, "viewport": None,
+            "user_data_dir": str(self.config.profile_dir), "headless": headless, "no_viewport": True,  # 페이지 영역이 창 크기를 따른다 (viewport=None 은 1280x720 고정)
             "args": [win_arg, "--disable-blink-features=AutomationControlled"],
             "ignore_default_args": ["--enable-automation"],
         }

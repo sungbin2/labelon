@@ -954,3 +954,24 @@ PW: [비밀번호 - 보안상 기록 생략] 로그인해서 프로젝트 진행
 **Context**: CONSTRUCTION - Build and Test (cycle 9)
 
 ---
+## Cycle 9 - Push Success
+**Timestamp**: 2026-10-03T04:20:00Z
+**User Input**: "<bash-input> git push</bash-input> To https://github.com/sungbin2/labelon.git 57e152f..ef2ad6c main -> main"
+**AI Response**: 0.9.0 배포 완료(origin/main = ef2ad6c). 사용자 PC 는 다음 run.bat 에서 자동 반영.
+**Context**: OPERATIONS (cycle 9) 완료
+
+---
+## Cycle 9 - Feedback (창 최대화 안 됨)
+**Timestamp**: 2026-10-03T05:00:00Z
+**User Input**: "이미지 탭은 잘 뜨는데 Chrome 창이 최대화되지 않고 제한된 크기로 열려."
+**AI Response**: 로그 확인 후 원인 추적.
+**Context**: OPERATIONS (cycle 9) 결함
+
+---
+## Cycle 9 - Hotfix 0.9.1 (페이지 영역 1280x720 고정)
+**Timestamp**: 2026-10-03T05:30:00Z
+**User Input**: (없음)
+**AI Response**: 임시 프로필 실험 — OS 창은 최대화(2576x1408)되지만 페이지 screen/innerWidth 가 1280x720. 원인: Playwright Python 에서 `viewport=None` 은 기본 1280x720 에뮬레이션(사이클 1부터). `no_viewport=True` 로 변경 → innerWidth 2560. pytest 통과, v0.9.1, 커밋 후 사용자 push.
+**Context**: OPERATIONS (cycle 9) hotfix
+
+---

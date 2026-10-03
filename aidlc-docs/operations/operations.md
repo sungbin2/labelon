@@ -73,3 +73,4 @@ AI-DLC 규칙상 Operations 단계는 플레이스홀더다. 이 도구는 사�
 ## 사이클 9 (2026-10-03) 운영 메모 (v0.9.0)
 - Chrome 창 크기는 `chrome.window`(maximized 또는 1600x1000). 시작 후 CDP 로 적용하며 실패하면 `logs/app.log` 에 "window size apply failed"
 - 건을 가져오면 Chrome 이미지 전용 탭에 원본 사진을 표시(`chrome.image_tab`). 작업 탭은 뒤에 유지되어 제출에 영향 없음. 탭을 닫아도 다음 건에서 다시 만든다
+- 0.9.1: 페이지 영역이 1280x720 으로 고정되던 Playwright 옵션(viewport=None → no_viewport=True) 수정. 창 크기 문제가 또 보이면 임시 프로필로 `scratchpad/win_exp.py` 류의 CDP 실험(getWindowBounds + innerWidth)으로 창/페이지 중 어느 쪽인지 먼저 구분
