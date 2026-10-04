@@ -24,6 +24,7 @@ from ..services import (
     FetchAndAnalyzeService,
     HistoryService,
     SessionService,
+    SettingsService,
     SubmitService,
 )
 
@@ -76,6 +77,10 @@ class RevertField(BaseModel):
     field: str
 
 
+class AiSetting(BaseModel):
+    enabled: bool
+
+
 class ImpossibleBody(BaseModel):
     reason: str
 
@@ -95,6 +100,7 @@ def create_app(ctx: AppContext, *, manage_browser: bool = True, open_browser: bo
     history = HistoryService(ctx)
     cfgsvc = ConfigService(ctx.config)
     datasets = DatasetService(ctx)
+    settings = SettingsService(ctx)
 
     async def on_state(item: ReviewItem) -> None:
         # 사이클 7: 전이마다 집계를 실어 보내 제출 직후 헤더 건수가 갱신되게 한다
@@ -301,6 +307,14 @@ def create_app(ctx: AppContext, *, manage_browser: bool = True, open_browser: bo
     # -------------------------------------------------------------- 데이터셋 (cycle 2)
     @app.get("/datasets")
     async def datasets_get():
+        return datasets.snapshot()
+
+    @app.put("/settings/ai")
+    async def settings_ai(body: AiSetting):
+        try:
+            settings.set_ai(body.enabled)
+        except IllegalTransition as e:
+            return JSONResponse({"detail": str(e)}, status_code=409)
         return datasets.snapshot()
 
     @app.post("/datasets/refresh")

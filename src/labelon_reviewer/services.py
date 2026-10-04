@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import Any, Protocol
 
+from . import rules
 from .config import AppConfig
 from .diff import diff as compute_diff
 from .domain import (
@@ -83,6 +84,7 @@ class AppContext:
     submitter: SubmitterLike
     fetch_task: asyncio.Task | None = None
     login_watch_task: asyncio.Task | None = None  # 사이클 7: 재로그인 감시
+    ai_enabled: bool = True  # 사이클 11: False 면 가져오기에서 판정·수정 모델을 호출하지 않는다(수동 검토 모드)
     background: list[asyncio.Task] = field(default_factory=list)
     shutdown_event: asyncio.Event = field(default_factory=asyncio.Event)
     datasets: DatasetState = field(default_factory=lambda: DatasetState())
@@ -115,8 +117,11 @@ class DatasetService:
         return self.ctx.config.data_dir / "ui-state.json"
 
     def load_saved(self) -> int | None:
+        """저장된 데이터셋 선택값. 같은 파일의 ai_enabled 도 ctx 에 복원한다 (사이클 11)."""
         try:
             data = json.loads(self._path.read_text(encoding="utf-8"))
+            if "ai_enabled" in data:
+                self.ctx.ai_enabled = bool(data["ai_enabled"])
             v = data.get("selected_dataset_id")
             return int(v) if v is not None else None
         except (OSError, ValueError, json.JSONDecodeError):
@@ -125,7 +130,7 @@ class DatasetService:
     def save(self) -> None:
         try:
             self._path.parent.mkdir(parents=True, exist_ok=True)
-            self._path.write_text(json.dumps({"selected_dataset_id": self.state.selected_id}, ensure_ascii=False), encoding="utf-8")
+            self._path.write_text(json.dumps({"selected_dataset_id": self.state.selected_id, "ai_enabled": self.ctx.ai_enabled}, ensure_ascii=False), encoding="utf-8")
         except OSError as e:  # pragma: no cover
             log.warning("ui-state save failed: %s", e)
 
@@ -192,7 +197,24 @@ class DatasetService:
             "datasets": [d.model_dump() | {"supported": d.supported} for d in self.state.datasets],
             "selected_dataset_id": self.effective_id(), "selected_dataset_name": self.selected_name(),
             "datasets_updated_at": self.state.updated_at, "datasets_error": self.state.error,
+            "ai_enabled": self.ctx.ai_enabled,  # 사이클 11
         }
+
+
+# ============================================================ S-09 SettingsService (cycle 11)
+class SettingsService:
+    def __init__(self, ctx: AppContext) -> None:
+        self.ctx = ctx
+
+    def set_ai(self, enabled: bool) -> bool:
+        """AI 판정 on/off. 검토 중·진행 중에는 바꿀 수 없다(다음 건부터 적용). ui-state 에 저장."""
+        if self.ctx.sm.state not in SELECTABLE_STATES:
+            raise IllegalTransition("검토 중인 건이 있어 AI 설정을 바꿀 수 없습니다. 제출·반환 후 바꾸세요")
+        self.ctx.ai_enabled = bool(enabled)
+        DatasetService(self.ctx).save()
+        log.info("ai_enabled=%s", self.ctx.ai_enabled)
+        self.ctx.sm.publish()
+        return self.ctx.ai_enabled
 
 
 # ============================================================ S-01 SessionService
@@ -294,7 +316,7 @@ class FetchAndAnalyzeService:
             deadline = source.job_date + timedelta(minutes=cfg.labelon.job_time_limit_minutes)
             sm.transition(E.PARSED, {"item_id": item_id, "source": source, "draft": draft, "deadline": deadline,
                                      "final": FinalDraft.from_draft(draft)})
-            await self._analyze(item_id, source, draft, t0)
+            await self._analyze(item_id, source, draft, t0, use_ai=ctx.ai_enabled)
         except asyncio.CancelledError:
             log.info("fetch task cancelled")
             if item_id is not None:
@@ -319,8 +341,9 @@ class FetchAndAnalyzeService:
             except IllegalTransition:
                 pass
 
-    async def _analyze(self, item_id: int, source: SourceItem, draft: Draft, t0: float) -> None:
-        """이미지 → 판정 → 수정 → 최종안. run() 과 reanalyze() 가 공유한다 (JUDGING 상태에서 호출)."""
+    async def _analyze(self, item_id: int, source: SourceItem, draft: Draft, t0: float, use_ai: bool = True) -> None:
+        """이미지 → 판정 → 수정 → 최종안. run() 과 reanalyze() 가 공유한다 (JUDGING 상태에서 호출).
+        use_ai=False(사이클 11 수동 모드)면 모델을 호출하지 않고 규칙 경고만 붙여 바로 검토 대기로 보낸다."""
         ctx, sm = self.ctx, self.ctx.sm
         images = await ctx.images.fetch(ctx.browser.fetch_bytes, source)
         sm.current().image_paths = images
@@ -330,6 +353,21 @@ class FetchAndAnalyzeService:
                 await ctx.browser.show_image(source.image_url, source.org_file_name)
             except Exception as e:
                 log.warning("image tab failed: %s", e)
+
+        if not use_ai:
+            cur = sm.current()
+            cur.warnings.append("수동 검토 모드: AI 판정·수정을 건너뛰었습니다. 가이드 체크리스트를 보며 필요한 항목만 고치세요")
+            cur.warnings.extend(rule_warnings(draft, ctx.config))
+            sm.transition(E.REVIEW_READY)
+            final = FinalDraft.from_draft(draft)
+            cur = sm.current()
+            cur.final = final
+            cur.diffs = compute_diff(draft, final.as_draft())
+            await asyncio.to_thread(ctx.repo.save_final, item_id, final)
+            await asyncio.to_thread(ctx.repo.mark_state, item_id, "REVIEW", "manual mode")
+            sm.publish()
+            log.info("manual mode: fetched without AI in %.1fs (item_id=%s)", time.monotonic() - t0, item_id)
+            return
 
         warnings: list[str] = []
         judge = None
@@ -417,6 +455,21 @@ class FetchAndAnalyzeService:
                 await t
             except (asyncio.CancelledError, Exception):
                 pass
+
+
+def rule_warnings(draft: Draft, config: AppConfig) -> list[str]:
+    """모델 없이 되는 규칙 검사 (사이클 11 수동 모드): 템플릿 일치, 전화번호, 두 방향 결합 표현."""
+    from .judge import detect_compound_directions, detect_phone_numbers
+
+    out: list[str] = []
+    ic = rules.check(draft.instruction, config)
+    out.extend(f"Instruction: {d}" for d in ic.mismatch_details)
+    phones = detect_phone_numbers(draft) if config.text_rules.remove_phone_numbers else []
+    if phones:
+        out.append("전화번호가 포함되어 있습니다(삭제 대상): " + ", ".join(phones))
+    for ti in detect_compound_directions(draft):
+        out.append(f"두 방향 결합 표현 '{ti.wrong}' ({ti.field}) → 한 방향으로 고치세요")
+    return out
 
 
 # ============================================================ S-03 EditService

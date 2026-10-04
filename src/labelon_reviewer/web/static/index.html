@@ -16,6 +16,7 @@
     <label class="ds-label" for="dataset-select">데이터셋</label>
     <select id="dataset-select" class="ds-select" data-testid="dataset-select" title="진행중인 작업 중 선택"></select>
     <button id="dataset-refresh" class="btn small" data-testid="dataset-refresh-button" title="LabelOn 에서 목록 다시 읽기">새로고침</button>
+    <label class="ai-toggle" title="끄면 건을 가져올 때 AI 판정·수정을 하지 않고 초안을 그대로 검토합니다(수동 검토 모드). 다음 건부터 적용"><input type="checkbox" id="ai-toggle" data-testid="ai-toggle" checked> AI 판정</label>
     <span id="state-badge" class="badge" data-testid="state-badge">준비 중</span>
     <span id="file-name" class="muted" data-testid="file-name"></span>
     <span id="countdown" class="countdown" data-testid="countdown"></span>
@@ -60,7 +61,7 @@
 <footer id="action-bar" class="action-bar" data-testid="action-bar">
   <button id="btn-fetch" class="btn primary" data-testid="action-fetch-button" title="Alt+N">다음 건 가져오기 <kbd>Alt+N</kbd></button>
   <button id="btn-revert" class="btn" data-testid="action-revert-button" title="Alt+R">초안으로 되돌리기 <kbd>Alt+R</kbd></button>
-  <button id="btn-reanalyze" class="btn" data-testid="action-reanalyze-button" title="Alt+S">다시 판독 <kbd>Alt+S</kbd></button>
+  <button id="btn-reanalyze" class="btn" data-testid="action-reanalyze-button" title="Alt+S · 이 건을 AI 로 판정·수정 (수동 모드에서도 실행)">다시 판독 <kbd>Alt+S</kbd></button>
   <button id="btn-skip" class="btn small ghost" data-testid="action-skip-button" title="이 건을 제출하지 않고 LabelOn 에 반환">반환</button>
   <button id="btn-impossible" class="btn danger" data-testid="action-impossible-button" title="Alt+X">불가 제출 <kbd>Alt+X</kbd></button>
   <button id="btn-approve" class="btn success" data-testid="action-approve-button" title="Alt+A">승인·제출 <kbd>Alt+A</kbd></button>

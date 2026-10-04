@@ -9,6 +9,7 @@ const store = {
   focusField: null,    // 편집 중인 필드 (SSE 갱신 시 초안 패널을 다시 그리지 않음)
   pendingItem: null,   // 편집 중 보류된 최신 스냅샷 (blur 후 반영)
   loadedVersion: null, // 처음 받은 server_version
+  checklistFor: null, checklist: {}, // 가이드 체크리스트 상태 (사이클 11)
   needReload: false,   // 서버 버전이 바뀌어 새로고침 필요
   composing: false,    // 한글 IME 조합 중
   warned10: null,
@@ -108,6 +109,35 @@ function renderDatasets(item) {
   if (sel.innerHTML !== opts.join("")) sel.innerHTML = opts.join("");
   sel.disabled = !SELECTABLE.has(item.state) || !!item.login_required; $("dataset-refresh").disabled = BUSY.has(item.state);
   sel.title = item.datasets_error ? item.datasets_error : `진행중 데이터셋 ${list.length}개`;
+  const ai = $("ai-toggle");
+  if (ai && document.activeElement !== ai) ai.checked = item.ai_enabled !== false;
+  if (ai) ai.disabled = !SELECTABLE.has(item.state);
+}
+async function setAi(enabled) {
+  try { await api.put("/settings/ai", { enabled }); toast(enabled ? "AI 판정을 켰습니다. 다음 건부터 적용" : "AI 판정을 껐습니다. 다음 건부터 수동 검토 모드"); }
+  catch (e) { toast(e.message, true); if (store.item) renderDatasets(store.item); }
+}
+// 사이클 11: 검수 가이드 양식 체크리스트 (화면 내 체크 상태, 건이 바뀌면 초기화)
+const GUIDE_CHECKLIST = [
+  ["facts", "Facts 가 사진과 모두 일치 (사물·개수·색·방향, 주관적 추측 없음)"],
+  ["direction", "Task 가 요구하는 방향과 QA 내용이 일치 (길 안내 ↔ 물건 찾기 등)"],
+  ["archetype", "아키타입이 사진 환경에 맞음 (실외 사진에 실내 아키타입 X, 가전조작은 가구 포함·조작부 보임)"],
+  ["cot", "CoT 1 장소·상황 / 2 위험·주의 / 3 행동·답변 역할에 맞음"],
+  ["qa_cot3", "QA 가 CoT 3단계 내용과 맞고, 사진에 없는 인물·상황을 끌어들이지 않음"],
+  ["text", "오탈자·맞춤법, 숫자는 숫자 그대로(13번), 두 방향 결합 표현 없음(앞 왼쪽 X)"],
+  ["phone", "전화번호 없음"],
+  ["helper", "도움 요청은 사진에 보이는 사람에게만. 횡단보도는 신호·차량 확인 후 스스로"],
+  ["tone", "어린이 페르소나면 부드러운 말투"],
+  ["impossible", "불가 기준 아님: 핵심 오인식 전파 / 시각적 확인 요구 / 위험 행위 권고 / 환경 충돌 / 조작부 안 보임 → 해당하면 불가 제출"],
+];
+function checklistHTML(item, open) {
+  if (store.checklistFor !== item.item_id) { store.checklistFor = item.item_id; store.checklist = {}; }
+  const rows = GUIDE_CHECKLIST.map(([k, t]) => `<label class="chk"><input type="checkbox" data-chk="${k}" ${store.checklist[k] ? "checked" : ""}> <span>${esc(t)}</span></label>`).join("");
+  const done = GUIDE_CHECKLIST.filter(([k]) => store.checklist[k]).length;
+  return `<details class="guide-check" ${open ? "open" : ""} data-testid="guide-checklist"><summary>검수 가이드 체크리스트 <span class="muted">${done}/${GUIDE_CHECKLIST.length}</span></summary>${rows}</details>`;
+}
+function bindChecklist(panel) {
+  panel.querySelectorAll("[data-chk]").forEach((c) => c.addEventListener("change", () => { store.checklist[c.dataset.chk] = c.checked; const s = panel.querySelector(".guide-check summary .muted"); if (s) s.textContent = `${GUIDE_CHECKLIST.filter(([k]) => store.checklist[k]).length}/${GUIDE_CHECKLIST.length}`; }));
 }
 async function selectDataset(id) {
   try { await api.put("/datasets/selected", { dataset_id: +id }); toast("데이터셋을 바꿨습니다"); }
@@ -271,7 +301,11 @@ const TEXT_KIND = { typo: "오탈자", speculation: "추측", number: "숫자 �
 
 function renderJudge(item) {
   const j = item.judge, p = $("judge-panel");
-  if (!j) { p.innerHTML = `<h4>판정</h4><span class="muted">${BUSY.has(item.state) ? "판정 중..." : item.state === "REVIEW" ? "판정 결과 없음 (모델 오류 → 초안 그대로 검토)" : "-"}</span>`; return; }
+  if (!j) {
+    const manual = item.state === "REVIEW" && item.ai_enabled === false;
+    p.innerHTML = `<h4>판정</h4><span class="muted">${BUSY.has(item.state) ? (item.ai_enabled === false ? "초안 준비 중..." : "판정 중...") : manual ? "수동 검토 모드 — AI 판정 없이 초안을 검토합니다. 필요하면 '다시 판독'으로 AI 를 실행할 수 있습니다." : item.state === "REVIEW" ? "판정 결과 없음 (모델 오류 → 초안 그대로 검토)" : "-"}</span>${item.state === "REVIEW" ? checklistHTML(item, true) : ""}`;
+    bindChecklist(p); return;
+  }
   const th = store.config ? store.config.threshold : 40;
   const low = j.consistency_score <= th;
   p.innerHTML = `<h4>정합성 점수</h4><div class="score">${j.consistency_score} <span class="muted" style="font-size:14px">/ 100 (임계값 ${th})</span></div>
@@ -286,7 +320,9 @@ function renderJudge(item) {
     <h4 style="margin-top:12px">Facts 판정</h4>${j.fact_verdicts.map((v) => `<div class="verdict-row" data-jump="fact_${v.index + 1}"><span class="idx">${v.index + 1}</span><span class="tag ${v.verdict.toLowerCase()}">${v.verdict}</span><span>${esc(v.evidence)}</span></div>`).join("")}
     <h4 style="margin-top:12px">필드 정합</h4><div class="field-grid">${j.field_verdicts.map((v) => `<span data-jump="${v.field.replace(/^turn_(\d+)$/, "turn_$1_assistant")}" class="verdict-row"><span>${esc(v.field)}${v.role_fits === false ? ' <span class="tag false">역할</span>' : ""}${v.beyond_cot3 ? ' <span class="tag false">CoT3 밖</span>' : ""}</span><span class="${v.consistent ? "ok" : "ng"}">${v.consistent ? "O" : "X"}</span></span>`).join("")}</div>
     ${!(j.persona_task_fit.cot_fits && j.persona_task_fit.dialogue_fits) ? `<div class="alert warn">페르소나·태스크 적합성: CoT ${j.persona_task_fit.cot_fits ? "O" : "X"}, 대화 ${j.persona_task_fit.dialogue_fits ? "O" : "X"} — ${esc(j.persona_task_fit.note)}</div>` : ""}
-    ${j.model_usage ? `<div class="muted" style="margin-top:8px">judge: ${j.model_usage.model}, ${(j.model_usage.latency_ms / 1000).toFixed(1)}s, 출력 ${j.model_usage.output_tokens} 토큰</div>` : ""}`;
+    ${j.model_usage ? `<div class="muted" style="margin-top:8px">judge: ${j.model_usage.model}, ${(j.model_usage.latency_ms / 1000).toFixed(1)}s, 출력 ${j.model_usage.output_tokens} 토큰</div>` : ""}
+    ${checklistHTML(item, false)}`;
+  bindChecklist(p);
   p.querySelectorAll("[data-jump]").forEach((el) => el.addEventListener("click", () => { const f = $("field-" + el.dataset.jump); if (f) { f.scrollIntoView({ behavior: "smooth", block: "center" }); f.querySelector("textarea")?.focus(); } }));
 }
 function renderWarnings(item) {
@@ -297,7 +333,7 @@ function renderWarnings(item) {
 function renderProgress(item) {
   const p = $("progress-panel"); const busy = BUSY.has(item.state);
   p.classList.toggle("hidden", !busy);
-  if (busy) { const started = new Date(item.stage_started_at).getTime(); p.innerHTML = `<h4>진행</h4><div>${STATE_LABEL[item.state]}... <span id="elapsed" class="muted"></span></div>`; p._started = started; }
+  if (busy) { const started = new Date(item.stage_started_at).getTime(); p.innerHTML = `<h4>진행</h4><div>${STATE_LABEL[item.state]}${item.ai_enabled === false && item.state !== "FETCHING" ? " (수동 모드: AI 생략)" : ""}... <span id="elapsed" class="muted"></span></div>`; p._started = started; }
 }
 function renderActions(item) {
   const st = item.state, review = st === "REVIEW";
@@ -387,7 +423,8 @@ async function doReopen() { try { await api.post("/actions/reopen-browser"); toa
 async function doShutdown() { const ok = await dialog({ title: "종료", message: "서버와 Chrome 창을 종료합니다. 검토 중인 건은 제출되지 않습니다.", okLabel: "종료" }); if (!ok) return; try { await api.post("/actions/shutdown"); toast("종료 중..."); } catch (e) { toast(e.message, true); } }
 
 $("btn-fetch").onclick = doFetch; $("btn-approve").onclick = doApprove; $("btn-impossible").onclick = doImpossible;
-$("btn-skip").onclick = doSkip; $("btn-reanalyze").onclick = doReanalyze; $("btn-revert").onclick = doRevert; $("reopen-browser").onclick = doReopen; $("shutdown").onclick = doShutdown;
+$("btn-skip").onclick = doSkip; $("btn-reanalyze").onclick = doReanalyze; $("btn-revert").onclick = doRevert;
+$("ai-toggle").addEventListener("change", (e) => setAi(e.target.checked)); $("reopen-browser").onclick = doReopen; $("shutdown").onclick = doShutdown;
 document.addEventListener("keydown", (e) => {
   if (!e.altKey) return; const k = e.key.toLowerCase();
   if (k === "n") { e.preventDefault(); doFetch(); } else if (k === "a") { e.preventDefault(); doApprove(); } else if (k === "x") { e.preventDefault(); doImpossible(); }

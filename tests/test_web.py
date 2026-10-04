@@ -93,6 +93,9 @@ def test_datasets_endpoints(client):
     r = client.post("/datasets/refresh", headers={"origin": "http://testserver"})
     assert r.status_code == 200 and [d["dataset_id"] for d in r.json()["datasets"]] == [688, 687, 686, 685, 684, 682]
     assert client.get("/datasets").json()["selected_dataset_id"] == 688
+    r = client.put("/settings/ai", json={"enabled": False}, headers={"origin": "http://testserver"})  # 사이클 11
+    assert r.status_code == 200 and r.json()["ai_enabled"] is False and client.get("/state").json()["ai_enabled"] is False
+    client.put("/settings/ai", json={"enabled": True}, headers={"origin": "http://testserver"})
     assert client.get("/state").json()["selected_dataset_name"].endswith("(어린이3)")
     r = client.put("/datasets/selected", json={"dataset_id": 684}, headers={"origin": "http://testserver"})
     assert r.status_code == 200 and r.json()["selected_dataset_id"] == 684

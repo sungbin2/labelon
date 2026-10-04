@@ -56,6 +56,12 @@ textarea.ins-ctl { min-height: 64px; resize: vertical; line-height: 1.5; }
 .field-head .tag { font-size: 11px; padding: 1px 6px; border-radius: 8px; background: var(--badge); margin-left: 6px; }
 .tag.changed { background: #fff3d6; color: var(--warn); }
 .btn.tiny { font-size: 11px; padding: 1px 7px; margin-left: 6px; line-height: 1.6; }
+.ai-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); margin-left: 8px; cursor: pointer; }
+.ai-toggle input { accent-color: var(--primary); }
+.guide-check { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 6px; }
+.guide-check summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+.guide-check .chk { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; margin: 4px 0; line-height: 1.4; }
+.guide-check .chk input { margin-top: 2px; }
 .tag.true { background: var(--ins-bg); color: var(--ins-fg); }
 .tag.false { background: var(--del-bg); color: var(--del-fg); }
 .tag.unknown { background: #eceff3; color: var(--muted); }

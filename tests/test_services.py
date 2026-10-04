@@ -25,6 +25,7 @@ from labelon_reviewer.services import (
     EditService,
     FetchAndAnalyzeService,
     SessionService,
+    SettingsService,
     SubmitService,
     validate_final,
 )
@@ -158,6 +159,32 @@ async def test_login_expired(config, tmp_path):
     ctx.login_watch_task.cancel()
     await SessionService(ctx).watch_login(interval=0.01)  # FakeBrowser.is_logged_in → True
     assert not ctx.sm.current().login_required and any("로그인이 확인" in w for w in ctx.sm.current().warnings)
+
+
+async def test_manual_mode_fetch_skips_models(config, tmp_path, job_page_html):
+    """사이클 11: AI 꺼짐 → 모델 호출 0회, 초안 그대로 검토 대기, 규칙 경고만. 다시 판독은 AI 로 실행."""
+    ctx = make_ctx(config, tmp_path, job_page_html, judge_raw=judge_raw_all_true())
+    SettingsService(ctx).set_ai(False)
+    assert ctx.ai_enabled is False and DatasetService(ctx).load_saved() is None  # 파일에는 ai_enabled 만 있어도 된다
+    assert ctx.ai_enabled is False
+    await run_fetch(ctx)
+    cur = ctx.sm.current()
+    assert ctx.sm.state is S.REVIEW and cur.judge is None and cur.revised is None
+    assert cur.final.as_draft().scene == cur.draft.scene and not any(d.changed for d in cur.diffs)
+    assert ctx.model.calls == [] and any("수동 검토 모드" in w for w in cur.warnings)
+    with pytest.raises(IllegalTransition):
+        SettingsService(ctx).set_ai(True)  # 검토 중에는 변경 불가
+    await FetchAndAnalyzeService(ctx).start_reanalyze()  # 수동 모드라도 다시 판독은 AI
+    assert ctx.sm.current().judge is not None and ctx.model.calls.count("judge") == 1
+
+
+async def test_ai_setting_persisted_in_ui_state(config, tmp_path, job_page_html):
+    ctx = make_ctx(config, tmp_path, job_page_html)
+    SettingsService(ctx).set_ai(False)
+    ctx2 = make_ctx(config, tmp_path, job_page_html)
+    assert ctx2.ai_enabled is True
+    DatasetService(ctx2).load_saved()
+    assert ctx2.ai_enabled is False and DatasetService(ctx2).snapshot()["ai_enabled"] is False
 
 
 async def test_image_tab_shown_after_fetch(config, tmp_path, job_page_html):

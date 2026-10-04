@@ -1019,3 +1019,38 @@ PW: [비밀번호 - 보안상 기록 생략] 로그인해서 프로젝트 진행
 **Context**: CONSTRUCTION→OPERATIONS (cycle 10)
 
 ---
+## Cycle 10 - Push Success
+**Timestamp**: 2026-10-03T07:40:00Z
+**User Input**: "<bash-input> git push</bash-input> To https://github.com/sungbin2/labelon.git d9969d8..79183f8 main -> main"
+**AI Response**: 0.10.0 배포 완료. 사용자 확인 대기(불가 후보 건의 수정안 표시).
+**Context**: OPERATIONS (cycle 10) 완료
+
+---
+## Cycle 11 - User Input
+**Timestamp**: 2026-10-04T00:00:00Z
+**User Input**: "AI 기능을 끄고 가이드 양식에 따라 수정해야할 사항만 수정할수 있는 기능버튼이 추가되었으면 합니다."
+**AI Response**: 사이클 11 시작: AI 판정 on/off 토글(런타임, 저장), 수동 모드에서는 모델 호출 없이 초안을 바로 검토 대기로 + 규칙 검사 경고 + 가이드 체크리스트 패널.
+**Context**: INCEPTION - Requirements Analysis (cycle 11)
+
+---
+## Cycle 11 - Requirements + Plan / Approval Prompt
+**Timestamp**: 2026-10-04T00:20:00Z
+**User Input**: (없음)
+**AI Response**: cycle11-requirements.md(FR-C11-1~3: AI 토글 저장, 수동 모드 가져오기(모델 0회, 규칙 경고), 가이드 체크리스트), cycle11-code-generation-plan.md(D1~D5, 3단계). 승인 요청.
+**Context**: INCEPTION→CONSTRUCTION (cycle 11) 승인 대기
+
+---
+## Cycle 11 - Approval
+**Timestamp**: 2026-10-04T00:30:00Z
+**User Input**: "승인"
+**AI Response**: 승인. Step 1 백엔드 생성 시작.
+**Context**: CONSTRUCTION - Code Generation (cycle 11)
+
+---
+## Cycle 11 - Complete
+**Timestamp**: 2026-10-04T01:00:00Z
+**User Input**: (없음)
+**AI Response**: 백엔드(ai_enabled·ui-state·SettingsService·_analyze use_ai·rule_warnings·PUT /settings/ai)·프론트(토글·체크리스트·수동 모드 문구) 완료. pytest 123 passed, ruff·node 통과. v0.11.0 커밋, 사용자 push 필요.
+**Context**: CONSTRUCTION→OPERATIONS (cycle 11)
+
+---
